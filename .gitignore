@@ -1,0 +1,8 @@
+/output
+/test
+/.venv
+*.pyc
+/dist
+/build
+src/py_ppi_arg.egg-info
+.env
