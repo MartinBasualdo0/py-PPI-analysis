@@ -142,7 +142,6 @@ def fetch(limit: int | None = None, resume: bool = False) -> pd.DataFrame:
     today     = date.today()
     date_from = (today - timedelta(days=30)).strftime("%Y-%m-%d")
     date_to   = today.strftime("%Y-%m-%d")
-    today_dt  = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
     iterable  = ons[:limit] if limit else ons
 
     rows   = list(checkpoint_rows)
@@ -195,7 +194,10 @@ def fetch(limit: int | None = None, resume: bool = False) -> pd.DataFrame:
             if not price or price <= 0:
                 continue
 
-            tir = _ytm(flujos, price, today_dt)
+            price_dt     = pd.to_datetime(last["fechaCotizacion"]).normalize().to_pydatetime().replace(tzinfo=None)
+            settlement_dt = (pd.Timestamp(price_dt) + pd.offsets.BDay(1)).to_pydatetime()
+
+            tir = _ytm(flujos, price, settlement_dt)
             if tir is None:
                 continue
 
