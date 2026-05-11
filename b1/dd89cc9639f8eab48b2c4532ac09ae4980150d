@@ -1,0 +1,29 @@
+fetch_ons.py
+  ai_agent 1-302
+explore/on_tir_dotplot.ipynb
+  ai_agent 1-3465
+context/py_ppi_arg.md
+  ai_agent 1-249
+docs/index.html
+  s_9f2cf349cab9da::t_69b544fa832466 1-2553
+explore/on_balance_risk.ipynb
+  ai_agent 1-14332
+explore/on_report.py
+  ai_agent 1-1221
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.6",
+  "base_commit_sha": "b1dd89cc9639f8eab48b2c4532ac09ae4980150d",
+  "prompts": {},
+  "sessions": {
+    "s_9f2cf349cab9da": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ad2e271f-8330-417e-81eb-1b9a903f6582",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Martin Miguel Basualdo <martin.basualdo+meli@mercadolibre.com>"
+    }
+  }
+}
