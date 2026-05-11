@@ -1,0 +1,14 @@
+explore/on_report.py
+  h_60bc0232a3b166 28,30,1225
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.6",
+  "base_commit_sha": "d16a9621bcc92b553de70aac7f602e3ed6e770f6",
+  "prompts": {},
+  "humans": {
+    "h_60bc0232a3b166": {
+      "author": "Martin Miguel Basualdo <martin.basualdo+meli@mercadolibre.com>"
+    }
+  }
+}
