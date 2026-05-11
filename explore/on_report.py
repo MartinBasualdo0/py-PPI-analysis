@@ -1231,3 +1231,9 @@ if __name__ == "__main__":
         encoding="utf-8",
     )
     print(f"Reporte guardado: {out}  ({out.stat().st_size / 1024:.1f} KB)")
+
+    docs = root / "docs" / "index.html"
+    if docs.parent.exists():
+        import shutil
+        shutil.copy2(out, docs)
+        print(f"Copiado a:        {docs}")
