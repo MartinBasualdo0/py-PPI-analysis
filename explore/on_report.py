@@ -462,6 +462,11 @@ main{max-width:1180px;margin:0 auto;padding:28px 20px}
 .footnote{font-size:11px;color:var(--muted);text-align:center;
           margin-top:36px;padding-top:16px;border-top:1px solid var(--border);line-height:1.8}
 .filter-bar{background:var(--navy2);padding:12px 40px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.risk-legend{background:#f8f9fb;border-bottom:1px solid #dde3ec;padding:10px 40px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px}
+.risk-legend-title{font-weight:600;color:#334;white-space:nowrap}
+.risk-pill{border:1px solid;border-radius:12px;padding:3px 10px;font-size:11px;white-space:nowrap}
+.risk-pill small{opacity:.75;margin-left:2px}
+.risk-legend-hint{color:#667;font-size:11px;font-style:italic;margin-left:8px}
 .filter-bar label{color:#cde;font-size:12px;display:flex;align-items:center;gap:6px}
 .filter-bar input,.filter-bar select{background:#1a2f50;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:4px;padding:4px 7px;font-size:12px;width:auto}
 .filter-bar input[type=number]{width:70px}
@@ -1152,6 +1157,16 @@ def build_html_report(
         + """</nav>"""
         + filter_bar
         + """
+<div class="risk-legend">
+  <span class="risk-legend-title">Riesgo crediticio (Deuda / EBITDA):</span>
+  <span class="risk-pill" style="background:#e8f5e9;color:#1b5e20;border-color:#27ae60">&#9679; Bajo <small>≤ 2x</small></span>
+  <span class="risk-pill" style="background:#fff8e1;color:#7f4800;border-color:#f39c12">&#9679; Moderado <small>2–4x</small></span>
+  <span class="risk-pill" style="background:#fff3e0;color:#bf360c;border-color:#e67e22">&#9679; Alto <small>4–6x</small></span>
+  <span class="risk-pill" style="background:#ffebee;color:#b71c1c;border-color:#e74c3c">&#9679; Muy alto <small>&gt; 6x</small></span>
+  <span class="risk-pill" style="background:#f3e5f5;color:#4a148c;border-color:#8e44ad">&#9679; EBITDA negativo</span>
+  <span class="risk-pill" style="background:#f5f5f5;color:#424242;border-color:#95a5a6">&#9679; Sin dato</span>
+  <span class="risk-legend-hint">El ratio mide cuántos años de resultado operativo (EBITDA) se necesitan para cancelar toda la deuda financiera.</span>
+</div>
 <main>
   <h2 class="sec-title">Curva de TIRs</h2>
   <div class="card" style="padding:16px 20px">
