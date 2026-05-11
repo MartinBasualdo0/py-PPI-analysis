@@ -23,12 +23,13 @@ import plotly.io as pio
 # CONFIGURACIÓN — editá estos valores para cambiar el filtro por defecto
 # ═══════════════════════════════════════════════════════════════════════════════
 
-DEFAULT_MIN_TIR     = 7.0          # TIR mínima (%)
-DEFAULT_MAX_TIR     = 10.0         # TIR máxima (%)
-DEFAULT_MIN_VTO     = "2027-01-01" # Vencimiento mínimo YYYY-MM-DD
-DEFAULT_MAX_VTO     = None         # Vencimiento máximo YYYY-MM-DD (None = sin límite)
+DEFAULT_MIN_TIR = 7.0          # TIR mínima (%)
+DEFAULT_MAX_TIR = 10.0         # TIR máxima (%)
+DEFAULT_MIN_VTO = "2027-01-01"  # Vencimiento mínimo YYYY-MM-DD
+# Vencimiento máximo YYYY-MM-DD (None = sin límite)
+DEFAULT_MAX_VTO = None
 DEFAULT_MIN_VOLUMEN = 0.0          # Volumen mínimo operado (0 = sin filtro)
-DEFAULT_COTIZACION  = "USD MEP"    # "ARS" | "USD MEP" | "USD CCL" | "" (todas)
+DEFAULT_COTIZACION = "USD MEP"    # "ARS" | "USD MEP" | "USD CCL" | "" (todas)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -361,7 +362,8 @@ def run_pipeline(
     metrics = build_company_metrics(balances)
     matched = match_ons(ons, metrics)
     risk = build_risk(matched, metrics)
-    cands = filter_candidatas(risk, min_tir, max_tir, min_vto, max_vto, min_volumen, excl_buckets, cotizacion)
+    cands = filter_candidatas(
+        risk, min_tir, max_tir, min_vto, max_vto, min_volumen, excl_buckets, cotizacion)
     label = f"cotización {cotizacion}" if cotizacion else "todas las cotizaciones"
     print(f"Candidatas TIR {min_tir}–{max_tir}% ({label}): {len(cands)}")
     return cands, risk
@@ -372,7 +374,7 @@ def run_pipeline(
 # ═══════════════════════════════════════════════════════════════════════════════
 
 VN_MIN_LOCAL = 1_000    # USD — emisiones locales (fallback)
-VN_MIN_REGS  = 150_000  # USD — Reg S (fallback si no hay lamina_minima)
+VN_MIN_REGS = 150_000  # USD — Reg S (fallback si no hay lamina_minima)
 
 
 def _vn_min(row: pd.Series) -> float:
@@ -850,7 +852,8 @@ def _payment_chart(row: pd.Series) -> str:
         ),
         barmode="stack", height=300, template="plotly_white",
         margin=dict(t=80, b=45, l=55, r=15),
-        legend=dict(orientation="h", x=0.5, xanchor="center", y=1.0, yanchor="bottom"),
+        legend=dict(orientation="h", x=0.5, xanchor="center",
+                    y=1.0, yanchor="bottom"),
         xaxis=dict(
             title="Fecha de pago",
             tickmode="array",
@@ -875,13 +878,15 @@ def _dotplot_html(
     """Scatter TIR vs. vencimiento: universo completo de fondo + candidatas destacadas."""
     import numpy as np
 
-    _COTIZ_COLOR = {"ARS": "#aab4c8", "USD CCL": "#f0b97a", "USD MEP": "#7dcba4"}
+    _COTIZ_COLOR = {"ARS": "#aab4c8",
+                    "USD CCL": "#f0b97a", "USD MEP": "#7dcba4"}
 
     fig = go.Figure()
 
     # ── Área sombreada del filtro ─────────────────────────────────────────────
     universe = ons_all if ons_all is not None else cands
-    x_rect_max = pd.Timestamp(max_vto) if max_vto else pd.to_datetime(universe["fechaVencimiento"]).max()
+    x_rect_max = pd.Timestamp(max_vto) if max_vto else pd.to_datetime(
+        universe["fechaVencimiento"]).max()
     fig.add_shape(
         type="rect",
         x0=pd.Timestamp(min_vto), x1=x_rect_max,
@@ -920,7 +925,8 @@ def _dotplot_html(
                     opacity=0.45,
                     line=dict(width=0),
                 ),
-                customdata=grp[["ticker", "descripcion", "moneda_cotizacion", "volumen"]].astype(str).values,
+                customdata=grp[["ticker", "descripcion",
+                                "moneda_cotizacion", "volumen"]].astype(str).values,
                 hovertemplate=(
                     "<b>%{customdata[0]}</b>  %{customdata[1]}<br>"
                     "TIR: %{y:.2f}%  ·  Vto: %{x|%d/%m/%Y}<br>"
@@ -952,7 +958,8 @@ def _dotplot_html(
         text=df["ticker"],
         textposition="top center",
         textfont=dict(size=10),
-        customdata=df[["ticker", "company", "price", "volumen", "moneda_cotizacion"]].values,
+        customdata=df[["ticker", "company", "price",
+                       "volumen", "moneda_cotizacion"]].values,
         hovertemplate=(
             "<b>%{customdata[0]}</b>  %{customdata[1]}<br>"
             "TIR: <b>%{y:.2f}%</b>  ·  Vto: %{x|%d/%m/%Y}<br>"
@@ -992,9 +999,9 @@ def _bond_card_html(row: pd.Series) -> str:
     e_i = row.get("ebitda_sobre_intereses")
     liq = row.get("liquidez")
     vol = float(row.get("volumen") or 0)
-    vn_min  = _vn_min(row)
+    vn_min = _vn_min(row)
     min_inv = price * (vn_min / 100)
-    curr    = "ARS" if cotiz == "ARS" else "USD"
+    curr = "ARS" if cotiz == "ARS" else "USD"
 
     ctbl = (
         _row_html("Empresa", company[:42]) +
@@ -1094,7 +1101,8 @@ def build_html_report(
             ons_all["tir_pct"].between(0, 30)
             & (pd.to_datetime(ons_all["fechaVencimiento"]) >= today)
         )
-        prerender_df = ons_all[pre_mask].sort_values("tir_pct", ascending=False).reset_index(drop=True)
+        prerender_df = ons_all[pre_mask].sort_values(
+            "tir_pct", ascending=False).reset_index(drop=True)
     else:
         prerender_df = cands.copy()
 
@@ -1115,7 +1123,8 @@ def build_html_report(
     ons_json = _ons_to_json(embed_df)
 
     # ── Filter bar ───────────────────────────────────────────────────────────
-    filter_bar = _filter_bar_html(min_tir, max_tir, min_vto, max_vto, DEFAULT_MIN_VOLUMEN, DEFAULT_COTIZACION)
+    filter_bar = _filter_bar_html(
+        min_tir, max_tir, min_vto, max_vto, DEFAULT_MIN_VOLUMEN, DEFAULT_COTIZACION)
 
     return (
         """<!DOCTYPE html>
@@ -1189,7 +1198,8 @@ if __name__ == "__main__":
     parser.add_argument("--max-tir",     type=float, default=DEFAULT_MAX_TIR)
     parser.add_argument("--min-vto",     type=str,   default=DEFAULT_MIN_VTO)
     parser.add_argument("--max-vto",     type=str,   default=DEFAULT_MAX_VTO)
-    parser.add_argument("--min-volumen", type=float, default=DEFAULT_MIN_VOLUMEN)
+    parser.add_argument("--min-volumen", type=float,
+                        default=DEFAULT_MIN_VOLUMEN)
     parser.add_argument("--cotizacion",  type=str,   default=DEFAULT_COTIZACION,
                         help="ARS | USD MEP | USD CCL | '' (todas)")
     parser.add_argument("--out",        type=str,   default=None,
@@ -1212,10 +1222,12 @@ if __name__ == "__main__":
         cotizacion=args.cotizacion,
     )
 
-    out = Path(args.out) if args.out else root / "output" / "on_candidatas_report.html"
+    out = Path(args.out) if args.out else root / \
+        "output" / "on_candidatas_report.html"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(
-        build_html_report(cands, ons_all, args.min_tir, args.max_tir, args.min_vto, args.max_vto),
+        build_html_report(cands, ons_all, args.min_tir,
+                          args.max_tir, args.min_vto, args.max_vto),
         encoding="utf-8",
     )
     print(f"Reporte guardado: {out}  ({out.stat().st_size / 1024:.1f} KB)")
