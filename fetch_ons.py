@@ -194,7 +194,11 @@ def fetch(limit: int | None = None, resume: bool = False) -> pd.DataFrame:
             if not price or price <= 0:
                 continue
 
-            price_dt     = pd.to_datetime(last["fechaCotizacion"]).normalize().to_pydatetime().replace(tzinfo=None)
+            # Volumen del último día completo con operaciones (no del día en curso)
+            last_with_vol = next((h for h in reversed(hist) if (h.get("volumen") or 0) > 0), None)
+            volumen = last_with_vol["volumen"] if last_with_vol else 0
+
+            price_dt      = pd.to_datetime(last["fechaCotizacion"]).normalize().to_pydatetime().replace(tzinfo=None)
             settlement_dt = (pd.Timestamp(price_dt) + pd.offsets.BDay(1)).to_pydatetime()
 
             tir = _ytm(flujos, price, settlement_dt)
@@ -215,7 +219,7 @@ def fetch(limit: int | None = None, resume: bool = False) -> pd.DataFrame:
                 "fechaVencimiento": td.get("fechaVencimiento"),
                 "price":            price,
                 "price_date":       last.get("fechaCotizacion"),
-                "volumen":          last.get("volumen") or 0,
+                "volumen":          volumen,
                 "moneda_cotizacion": _quote_market(item),
                 "moneda_emision":   "USD" if "U$S" in (descripcion or "") else (flujos[0].get("moneda") or "?").upper(),
                 "lamina_minima":    _min_denomination(td),
