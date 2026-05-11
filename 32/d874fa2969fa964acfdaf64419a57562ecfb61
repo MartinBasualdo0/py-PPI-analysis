@@ -1,0 +1,24 @@
+fetch_ons.py
+  s_9f2cf349cab9da::t_20db3e9bb0c863 197-200
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.6",
+  "base_commit_sha": "32d874fa2969fa964acfdaf64419a57562ecfb61",
+  "prompts": {},
+  "humans": {
+    "h_60bc0232a3b166": {
+      "author": "Martin Miguel Basualdo <martin.basualdo+meli@mercadolibre.com>"
+    }
+  },
+  "sessions": {
+    "s_9f2cf349cab9da": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ad2e271f-8330-417e-81eb-1b9a903f6582",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Martin Miguel Basualdo <martin.basualdo+meli@mercadolibre.com>"
+    }
+  }
+}
