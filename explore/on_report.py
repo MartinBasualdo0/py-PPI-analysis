@@ -326,7 +326,7 @@ def filter_candidatas(
 ) -> pd.DataFrame:
     """Filtra ONs por TIR, rango de vencimiento, volumen mínimo y cotización."""
     if excl_buckets is None:
-        excl_buckets = {"EBITDA negativo"}
+        excl_buckets = set()
     mask = (
         (risk["tir_pct"].between(min_tir, max_tir))
         & (risk["fechaVencimiento"] >= pd.Timestamp(min_vto))
@@ -480,7 +480,7 @@ main{max-width:1180px;margin:0 auto;padding:28px 20px}
 _JS = r"""
 const ALL_ONDS = JSON.parse(document.getElementById('ons-data').textContent);
 const MAX_VOL = Math.max(...ALL_ONDS.map(b => b.volumen || 0), 1);
-const EXCL_BUCKETS = ["EBITDA negativo"];
+const EXCL_BUCKETS = [];
 const BADGE_COLORS = {
   "bajo (≤2x)": "#27ae60",
   "moderado (2-4x)": "#f39c12",
