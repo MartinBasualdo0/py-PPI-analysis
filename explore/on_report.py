@@ -426,8 +426,9 @@ nav a:hover{background:rgba(255,255,255,.15)}
 main{max-width:1180px;margin:0 auto;padding:28px 20px}
 .sec-title{font-size:17px;font-weight:700;color:var(--navy);margin:0 0 14px;
            padding-bottom:7px;border-bottom:2px solid var(--navy)}
+.ov-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:36px}
 .ov-table{width:100%;border-collapse:collapse;background:var(--card);border-radius:8px;
-          overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:36px}
+          overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .ov-table th{background:var(--navy);color:#fff;padding:9px 11px;text-align:left;
              font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase}
 .ov-table td{padding:8px 11px;border-bottom:1px solid var(--border);font-size:13px}
@@ -443,6 +444,22 @@ main{max-width:1180px;margin:0 auto;padding:28px 20px}
            font-weight:700;font-size:15px;white-space:nowrap;border:1px solid #a5d6a7}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:16px}
 @media(max-width:680px){.grid2{grid-template-columns:1fr}}
+@media(max-width:600px){
+  header{padding:16px 14px}
+  header h1{font-size:18px}
+  nav{padding:8px 12px;gap:6px}
+  nav a{font-size:11px;padding:3px 8px}
+  .filter-bar{padding:10px 12px;gap:8px}
+  .filter-bar label{flex-direction:column;align-items:flex-start;gap:2px}
+  .filter-bar input[type=number]{width:80px}
+  .filter-bar input[type=date]{width:145px}
+  .filter-bar select{width:130px}
+  .risk-legend{padding:8px 12px}
+  main{padding:16px 10px}
+  .card{padding:16px 14px}
+  .bond-hdr{gap:8px}
+  .ticker-badge{font-size:14px;padding:4px 10px}
+}
 .info-tbl{width:100%;border-collapse:collapse}
 .info-tbl thead tr th{background:var(--navy);color:#fff;padding:8px 10px;text-align:left;
                        font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:uppercase}
@@ -1078,6 +1095,7 @@ def _overview_html(cands: pd.DataFrame) -> str:
         </tr>"""
     return f"""
 <h2 class="sec-title">Resumen de candidatas</h2>
+<div class="ov-table-wrap">
 <table class="ov-table">
   <thead><tr>
     <th>Ticker</th><th>Empresa</th><th>TIR</th><th>Vencimiento</th>
@@ -1085,6 +1103,7 @@ def _overview_html(cands: pd.DataFrame) -> str:
   </tr></thead>
   <tbody id="overview-tbody">{rows_html}</tbody>
 </table>
+</div>
 """
 
 
