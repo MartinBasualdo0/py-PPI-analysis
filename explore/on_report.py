@@ -492,6 +492,15 @@ main{max-width:1180px;margin:0 auto;padding:28px 20px}
 .filter-btn{background:#27ae60;color:#fff;border:none;border-radius:5px;padding:7px 18px;font-size:13px;font-weight:600;cursor:pointer}
 .filter-btn:hover{background:#219a52}
 .cands-count{color:#a8ffc8;font-size:12px;font-weight:600;margin-left:8px}
+.sim-section{margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.sim-hdr{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px}
+.sim-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.sim-label{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sim-input{border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:13px;width:130px;color:var(--text)}
+.sim-btn{background:var(--navy);color:#fff;border:none;border-radius:5px;padding:6px 16px;font-size:12px;font-weight:600;cursor:pointer}
+.sim-btn:hover{background:var(--navy2)}
+.sim-result{font-size:12px;margin-top:10px;padding:10px 14px;background:#f0f8f3;border-left:3px solid #27ae60;border-radius:0 6px 6px 0;line-height:1.8}
+@media(max-width:600px){.sim-input{width:110px}.sim-controls{gap:8px}}
 """
 
 _JS = r"""
@@ -623,6 +632,81 @@ function updateDotPlot(cands, minTir, maxTir, minVto, maxVto) {
     'annotations[0].y': maxTir,
     'annotations[0].text': label,
   });
+}
+
+function runSim(ticker) {
+  const rawEl = document.getElementById('simdata-' + ticker);
+  if (!rawEl) return;
+  const { flows, tir, price, vn_min, currency } = JSON.parse(rawEl.textContent);
+
+  const amount = parseFloat(document.getElementById('simamt-' + ticker).value) || 0;
+  if (amount <= 0) return;
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const sf = flows
+    .filter(f => new Date(f.fecha) > today)
+    .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+  if (!sf.length) return;
+
+  const pricePerVN = price / 100;
+  const vnBought = Math.floor(amount / pricePerVN / vn_min) * vn_min;
+  const resultEl = document.getElementById('simresult-' + ticker);
+  resultEl.style.display = '';
+  if (vnBought <= 0) {
+    resultEl.innerHTML = '⚠ Monto insuficiente. Mínimo estimado: ' + currency + ' ' +
+      Math.ceil(vn_min * pricePerVN).toLocaleString('es-AR');
+    return;
+  }
+
+  let vnHeld = vnBought;
+  let cashPool = amount - vnBought * pricePerVN;
+
+  function theoPrice(atDate, futureFlows) {
+    return futureFlows.reduce((s, f) => {
+      const days = (new Date(f.fecha) - atDate) / 86400000;
+      return days > 0 ? s + f.total / Math.pow(1 + tir, days / 365) : s;
+    }, 0);
+  }
+
+  const xs = [today.toISOString().slice(0,10)];
+  const ys = [amount];
+
+  for (let i = 0; i < sf.length; i++) {
+    const flowDate = new Date(sf[i].fecha);
+    const after = sf.slice(i + 1);
+    cashPool += sf[i].total * vnHeld / 100;
+    const tp = theoPrice(flowDate, after);
+    if (tp > 0 && after.length > 0) {
+      const moreVN = Math.floor(cashPool / (tp / 100) / vn_min) * vn_min;
+      if (moreVN > 0) { vnHeld += moreVN; cashPool -= moreVN * tp / 100; }
+    }
+    xs.push(sf[i].fecha);
+    ys.push(vnHeld * tp / 100 + cashPool);
+  }
+
+  const finalVal = ys[ys.length - 1];
+  const retPct = ((finalVal / amount - 1) * 100).toFixed(1);
+  const fmt = v => Math.round(v).toLocaleString('es-AR');
+
+  Plotly.newPlot(
+    document.getElementById('simchart-' + ticker),
+    [{ x: xs, y: ys, type: 'scatter', mode: 'lines+markers',
+       line: { color: '#27ae60', width: 2 }, marker: { size: 5, color: '#27ae60' },
+       hovertemplate: '%{x|%d %b %Y}: <b>' + currency + ' %{y:,.0f}</b><extra></extra>' }],
+    { height: 240, template: 'plotly_white',
+      margin: { t: 15, b: 40, l: 65, r: 15 },
+      xaxis: { tickformat: '%b %Y' },
+      yaxis: { tickformat: ',.0f', tickprefix: currency + ' ' },
+      font: { size: 11 }, showlegend: false },
+    { displayModeBar: false, responsive: true }
+  );
+
+  resultEl.innerHTML =
+    'Invertís <strong>' + currency + ' ' + fmt(amount) + '</strong>' +
+    ' &middot; VN comprado: <strong>' + currency + ' ' + fmt(vnBought) + '</strong>' +
+    ' &middot; Sobrante: ' + currency + ' ' + fmt(amount - vnBought * pricePerVN) +
+    '<br>Valor final reinvirtiendo cupones: <strong>' + currency + ' ' + fmt(finalVal) + '</strong>' +
+    ' <em>(' + (parseFloat(retPct) >= 0 ? '+' : '') + retPct + '% sobre inversión inicial)</em>';
 }
 
 window.addEventListener('load', applyFilters);
@@ -1046,6 +1130,20 @@ def _bond_card_html(row: pd.Series) -> str:
         _row_html("Volumen reciente op.", f"{vol:,.0f}")
     )
 
+    # Datos para la simulación JS
+    tir_dec = float(row.get("tir") or tir / 100)
+    fl_df = _parse_flujos(row["flujos"])
+    sim_flows = [
+        {"fecha": r["fecha"].strftime("%Y-%m-%d"), "total": round(float(r["total"]), 8)}
+        for _, r in fl_df.iterrows()
+    ]
+    sim_data = json.dumps(
+        {"flows": sim_flows, "tir": round(tir_dec, 8),
+         "price": round(float(price), 6), "vn_min": float(vn_min), "currency": curr},
+        ensure_ascii=False,
+    )
+    default_inv = max(int(vn_min * price / 100), 1000)
+
     return f"""<section class="card" id="{ticker}" data-ticker="{ticker}">
   <div class="bond-hdr">
     <span class="ticker-badge">{ticker}</span>
@@ -1069,6 +1167,20 @@ def _bond_card_html(row: pd.Series) -> str:
   </div>
   <div class="narr">{_narrative(row)}</div>
   <div class="chart-wrap">{_payment_chart(row)}</div>
+  <div class="sim-section">
+    <script type="application/json" id="simdata-{ticker}">{sim_data}</script>
+    <p class="sim-hdr">Simulación: reinversión de cupones al rendimiento actual</p>
+    <div class="sim-controls">
+      <label class="sim-label">Monto a invertir ({curr})
+        <input type="number" class="sim-input" id="simamt-{ticker}"
+               value="{default_inv}" min="0"
+               onkeypress="if(event.key==='Enter')runSim('{ticker}')">
+      </label>
+      <button class="sim-btn" onclick="runSim('{ticker}')">Simular</button>
+    </div>
+    <div id="simchart-{ticker}" class="sim-chart-wrap"></div>
+    <p id="simresult-{ticker}" class="sim-result" style="display:none"></p>
+  </div>
 </section>
 """
 
