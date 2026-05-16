@@ -121,7 +121,7 @@ def fetch(limit: int | None = None, resume: bool = False) -> pd.DataFrame:
         password=os.environ["PPI_PASSWORD"],
         remember_device=True,
     )
-    print(f"Auth OK. Token expira: {app._token_expires_at}")
+    print("Auth OK.")
 
     all_items = app.search_tickers(short_ticker="ON").get("payload") or []
     ons = [
