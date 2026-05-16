@@ -668,20 +668,29 @@ function runSim(ticker) {
     }, 0);
   }
 
-  const xs = [today.toISOString().slice(0,10)];
-  const ys = [amount];
+  // Simulación diaria desde hoy hasta el último vencimiento
+  const lastDate = new Date(sf[sf.length - 1].fecha);
+  const totalDays = Math.ceil((lastDate - today) / 86400000);
+  const xs = [], ys = [];
+  let flowIdx = 0;
 
-  for (let i = 0; i < sf.length; i++) {
-    const flowDate = new Date(sf[i].fecha);
-    const after = sf.slice(i + 1);
-    cashPool += sf[i].total * vnHeld / 100;
-    const tp = theoPrice(flowDate, after);
-    if (tp > 0 && after.length > 0) {
-      const moreVN = Math.floor(cashPool / (tp / 100) / vn_min) * vn_min;
-      if (moreVN > 0) { vnHeld += moreVN; cashPool -= moreVN * tp / 100; }
+  for (let d = 0; d <= totalDays; d++) {
+    const cur = new Date(today.getTime() + d * 86400000);
+
+    // Procesar pagos que caen en este día
+    while (flowIdx < sf.length && new Date(sf[flowIdx].fecha) <= cur) {
+      const after = sf.slice(flowIdx + 1);
+      cashPool += sf[flowIdx].total * vnHeld / 100;
+      const tp = theoPrice(new Date(sf[flowIdx].fecha), after);
+      if (tp > 0 && after.length > 0) {
+        const moreVN = Math.floor(cashPool / (tp / 100) / vn_min) * vn_min;
+        if (moreVN > 0) { vnHeld += moreVN; cashPool -= moreVN * tp / 100; }
+      }
+      flowIdx++;
     }
-    xs.push(sf[i].fecha);
-    ys.push(vnHeld * tp / 100 + cashPool);
+
+    xs.push(cur.toISOString().slice(0, 10));
+    ys.push(vnHeld * theoPrice(cur, sf.slice(flowIdx)) / 100 + cashPool);
   }
 
   const finalVal = ys[ys.length - 1];
@@ -690,8 +699,8 @@ function runSim(ticker) {
 
   Plotly.newPlot(
     document.getElementById('simchart-' + ticker),
-    [{ x: xs, y: ys, type: 'scatter', mode: 'lines+markers',
-       line: { color: '#27ae60', width: 2 }, marker: { size: 5, color: '#27ae60' },
+    [{ x: xs, y: ys, type: 'scatter', mode: 'lines',
+       line: { color: '#27ae60', width: 2 },
        hovertemplate: '%{x|%d %b %Y}: <b>' + currency + ' %{y:,.0f}</b><extra></extra>' }],
     { height: 240, template: 'plotly_white',
       margin: { t: 15, b: 40, l: 65, r: 15 },
