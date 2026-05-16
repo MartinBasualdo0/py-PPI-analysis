@@ -28,7 +28,7 @@ DEFAULT_MAX_TIR = 10.0         # TIR máxima (%)
 DEFAULT_MIN_VTO = "2027-01-01"  # Vencimiento mínimo YYYY-MM-DD
 # Vencimiento máximo YYYY-MM-DD (None = sin límite)
 DEFAULT_MAX_VTO = None
-DEFAULT_MIN_VOLUMEN = 0.0          # Volumen mínimo operado (0 = sin filtro)
+DEFAULT_MIN_VOLUMEN = 1.0          # Volumen mínimo operado
 DEFAULT_COTIZACION = "USD MEP"    # "ARS" | "USD MEP" | "USD CCL" | "" (todas)
 
 
