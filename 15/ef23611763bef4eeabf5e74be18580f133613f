@@ -1,0 +1,20 @@
+docs/index.html
+  s_19422908bdfc9a::t_15074adbe4efe4 4102
+  s_19422908bdfc9a::t_b3b52ddcae8ccc 4099,4103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "15ef23611763bef4eeabf5e74be18580f133613f",
+  "prompts": {},
+  "sessions": {
+    "s_19422908bdfc9a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5c1302e8-5cc9-470a-b8e9-dfbf6e6f8c78",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Martin Miguel Basualdo <martin.basualdo+meli@mercadolibre.com>"
+    }
+  }
+}
