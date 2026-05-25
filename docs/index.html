@@ -4096,10 +4096,11 @@ function runSim(ticker) {
     { displayModeBar: false, responsive: true }
   );
 
+  const sobrante = amount - vnBought * pricePerVN;
   resultEl.innerHTML =
     'Invertís <strong>' + currency + ' ' + fmt(amount) + '</strong>' +
-    ' &middot; VN comprado: <strong>' + currency + ' ' + fmt(vnBought) + '</strong>' +
-    ' &middot; Sobrante: ' + currency + ' ' + fmt(amount - vnBought * pricePerVN) +
+    ' &middot; VN comprado: <strong>VN ' + fmt(vnBought) + '</strong>' + ' (costo: ' + currency + ' ' + fmt(vnBought * pricePerVN) + ')' +
+    ' &middot; Sobrante: ' + currency + ' ' + fmt(sobrante) +
     '<br>Valor final reinvirtiendo cupones: <strong>' + currency + ' ' + fmt(finalVal) + '</strong>' +
     ' <em>(' + (parseFloat(retPct) >= 0 ? '+' : '') + retPct + '% sobre inversión inicial)</em>';
 }
