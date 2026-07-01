@@ -6,3 +6,8 @@
 /build
 src/py_ppi_arg.egg-info
 .env
+.DS_Store
+.claude/
+.vscode/
+balance_data_html.pkl
+context/
