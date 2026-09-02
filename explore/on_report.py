@@ -973,7 +973,7 @@ def _payment_chart(row: pd.Series) -> str:
             title="Fecha de pago",
             tickmode="array",
             tickvals=fl["fecha"].tolist(),
-            ticktext=[d.strftime("%-d %b %Y") for d in fl["fecha"]],
+            ticktext=[f"{d.day} {d.strftime('%b %Y')}" for d in fl["fecha"]],
             tickangle=-45,
         ),
         yaxis=dict(title="USD / 100 VN"),

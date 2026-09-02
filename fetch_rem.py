@@ -15,10 +15,14 @@ import argparse
 import io
 import re
 import sys
+from datetime import date
 from pathlib import Path
 
 import pandas as pd
 import requests
+
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT    = Path(__file__).parent
 OUT_DIR = ROOT / "output"
@@ -34,11 +38,10 @@ MES_SLUGS = {
     "septiembre": "sep", "octubre": "oct", "noviembre": "nov", "diciembre": "dic",
 }
 
-# Meses a probar en orden descendente para encontrar el más reciente
-MESES_ORDENADOS = [
-    "jun", "may", "abr", "mar", "feb", "ene",
-    "dic", "nov", "oct", "sep", "ago", "jul",
-]
+# Abreviaturas de mes en orden calendario (índice 0 = enero), usadas para
+# construir el slug BCRA (ej. mes 7 → "jul")
+_MES_ABBR = ["ene", "feb", "mar", "abr", "may", "jun",
+             "jul", "ago", "sep", "oct", "nov", "dic"]
 
 
 # ── descarga ─────────────────────────────────────────────────────────────────
@@ -53,16 +56,21 @@ def _get(url: str, timeout: int = 60) -> requests.Response:
 
 
 def find_latest_slug() -> str:
-    """Detecta el slug del REM más reciente disponible (año actual o anterior)."""
-    for year in [2026, 2025]:
-        for mes in MESES_ORDENADOS:
-            slug = f"{mes}-{year}"
-            url = f"{BASE}/tablas-relevamiento-expectativas-mercado-{slug}.xlsx"
-            try:
-                _get(url, timeout=15)
-                return slug
-            except Exception:
-                continue
+    """Detecta el slug del REM más reciente disponible, buscando hacia atrás
+    mes a mes desde el mes actual (hasta 18 meses)."""
+    today = date.today()
+    year, month = today.year, today.month
+    for _ in range(18):
+        slug = f"{_MES_ABBR[month - 1]}-{year}"
+        url = f"{BASE}/tablas-relevamiento-expectativas-mercado-{slug}.xlsx"
+        try:
+            _get(url, timeout=15)
+            return slug
+        except Exception:
+            pass
+        month -= 1
+        if month == 0:
+            month, year = 12, year - 1
     raise RuntimeError("No se encontró ningún REM reciente en el BCRA.")
 
 
