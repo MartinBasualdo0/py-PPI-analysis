@@ -22,6 +22,7 @@ from pathlib import Path
 
 import pandas as pd
 from dotenv import load_dotenv
+import ppi_compat  # noqa: F401  - normaliza URLs de py_ppi_arg 0.2.3 (ver modulo)
 from py_ppi_arg import PPI
 
 load_dotenv(Path(__file__).parent / ".env")
